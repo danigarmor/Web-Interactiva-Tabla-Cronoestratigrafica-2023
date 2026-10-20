@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Verificación de Correo - CronoEstrato 2023</title>
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0F172A">
+  
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    .verify-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .verify-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 36px 28px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      backdrop-filter: blur(20px);
+      animation: fadeIn 0.3s ease;
+    }
+    .verify-icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+    }
+    .verify-icon-wrap.success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid var(--accent-emerald);
+    }
+    .verify-icon-wrap.error {
+      background: rgba(244, 63, 94, 0.15);
+      border: 2px solid var(--accent-rose);
+    }
+    .verify-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .verify-text {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="verify-container">
+    <div class="verify-card" id="card-state">
+      <div class="spinner"></div>
+      <h2 class="verify-title">Verificando tu cuenta...</h2>
+      <p class="verify-text">Estamos confirmando tu enlace de verificación con el servidor.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const card = document.getElementById('card-state');
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+
+      if (!token) {
+        showError('No se encontró ningún token de verificación en el enlace.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/auth/verify?token=${encodeURIComponent(token)}`);
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showSuccess(data);
+        } else {
+          showError(data.message || 'El enlace de verificación no es válido o ha expirado.');
+        }
+      } catch (err) {
+        showError('No se pudo conectar con el servidor para verificar la cuenta.');
+      }
+
+      function showSuccess(data) {
+        card.innerHTML = `
+          <div class="verify-icon-wrap success">🎉</div>
+          <span class="badge-tag" style="background:#10B981; margin-bottom:10px;">CUENTA CONFIRMADA</span>
+          <h2 class="verify-title" style="color:#A7F3D0;">¡Correo Verificado con Éxito!</h2>
+          <p class="verify-text">
+            Hola <b>${data.user.name || data.user.username}</b>. Tu correo (<b>${data.user.email}</b>) ha sido activado correctamente.<br><br>
+            Ya puedes iniciar sesión en <b>CronoEstrato</b> para que tus puntos, nivel y medallas se guarden de forma permanente.
+          </p>
+          <a href="/?login=true&user=${encodeURIComponent(data.user.username)}" class="btn-primary" style="display:block; text-decoration:none; text-align:center; padding:14px;">
+            Ir a CronoEstrato e Iniciar Sesión ›
+          </a>
+        `;
+      }
+
+      function showError(msg) {
+        card.innerHTML = `
+          <div class="verify-icon-wrap error">❌</div>
+          <span class="badge-tag" style="background:#F43F5E; margin-bottom:10px;">ERROR DE ENLACE</span>
+          <h2 class="verify-title" style="color:#FECDD3;">Verificación Fallida</h2>
+          <p class="verify-text">${msg}</p>
+          <a href="/" class="btn-secondary" style="display:block; text-decoration:none; text-align:center; padding:12px;">
+            ‹ Volver a la Aplicación
+          </a>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

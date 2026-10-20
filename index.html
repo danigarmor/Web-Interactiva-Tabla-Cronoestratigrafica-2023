@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>CronoEstratigrafía 2023 - Juegos Geológicos</title>
+  
+  <!-- Optimización iOS iPhone Safari WebApp -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CronoEstrato">
+  <meta name="theme-color" content="#0F172A">
+  <link rel="apple-touch-icon" href="icon.png">
+  
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Contenedor Seguro para iOS (Notch / Dynamic Island y Home Bar) -->
+  <div id="app-container">
+    
+    <!-- Barra Superior de Navegación / Header estilo iOS -->
+    <header class="ios-header">
+      <div class="header-left" id="header-brand-logo" title="Volver a la página principal de Explorar">
+        <span class="badge-tag">ICS 2023</span>
+        <h1 class="header-title">CronoEstrato</h1>
+      </div>
+      <!-- Navegación para pantalla de ordenador / escritorio -->
+      <nav class="desktop-nav">
+        <button class="desktop-nav-item active" data-tab="explore">
+          <span class="nav-icon">🗺️</span> Explorar
+        </button>
+        <button class="desktop-nav-item" data-tab="games">
+          <span class="nav-icon">🎮</span> Juegos
+        </button>
+        <button class="desktop-nav-item" data-tab="mnemonics">
+          <span class="nav-icon">💡</span> Mnemotécnicas
+        </button>
+        <button class="desktop-nav-item" data-tab="achievements">
+          <span class="nav-icon">🏆</span> Logros
+        </button>
+        <!-- Pestaña exclusiva de Administrador: solo visible para danigarmo -->
+        <button id="nav-item-admin" class="desktop-nav-item admin-nav-btn" data-tab="admin" style="display:none;">
+          <span class="nav-icon">📬</span> Ayudas de los usuarios <span id="admin-badge-count" class="badge-count">2</span>
+        </button>
+      </nav>
+      <!-- Botones de utilidades: Sonido e Información (Siempre visibles en la barra superior en iPhone y Ordenador) -->
+      <div class="header-utility-actions">
+        <button id="btn-sound-toggle" class="icon-btn" aria-label="Sonido" title="Sonido activado/desactivado">
+          <span class="sound-icon">🔊</span>
+        </button>
+        <button id="btn-info" class="icon-btn" aria-label="Información" title="Acerca de y Créditos">
+          <span>ℹ️</span>
+        </button>
+      </div>
+
+      <!-- Acciones de Usuario: Ayudar a Mejorar e Iniciar Sesión / Perfil -->
+      <div class="header-user-actions">
+        <!-- Botón para enviar sugerencias/feedback -->
+        <button id="btn-open-feedback" class="btn-action-pill" title="Enviar ayuda o sugerencia para mejorar la web">
+          <span>💡</span> <span class="action-pill-text">Ayudar</span>
+        </button>
+        <!-- Botón de autenticación / Perfil -->
+        <button id="btn-auth-trigger" class="btn-auth-pill">
+          <span id="auth-btn-icon">👤</span>
+          <span id="auth-btn-label">Entrar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Subbarra informativa con puntos y racha del jugador -->
+    <section class="player-hud">
+      <div class="hud-item">
+        <span class="hud-label">NIVEL</span>
+        <span id="player-rank" class="hud-value highlight">Geólogo Aprendiz</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">PUNTOS</span>
+        <span id="player-score" class="hud-value">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">RACHA</span>
+        <span id="player-streak" class="hud-value">🔥 0</span>
+      </div>
+    </section>
+
+    <!-- Aviso de Modo Invitado: sólo se guarda progreso si inicias sesión -->
+    <div id="guest-alert-banner" class="guest-banner">
+      <div class="guest-banner-content">
+        <span class="guest-banner-icon">⚠️</span>
+        <div class="guest-banner-text">
+          <strong>Modo Invitado:</strong> Tu progreso <u>no se guardará</u> si no inicias sesión o creas tu cuenta.
+        </div>
+      </div>
+      <button id="btn-guest-login" class="btn-guest-action">Guardar Progreso</button>
+    </div>
+
+    <!-- ÁREA PRINCIPAL DE CONTENIDO DINÁMICO -->
+    <main id="main-content">
+
+      <!-- PESTAÑA 1: EXPLORADOR INTERACTIVO ICS 2023 -->
+      <section id="view-explore" class="tab-view active">
+        <div class="view-intro">
+          <h2>Tabla Oficial ICS 2023</h2>
+          <p>Explora la escala del tiempo geológico con sus límites oficiales en millones de años (Ma) y colores estándar.</p>
+        </div>
+
+        <!-- Buscador Rápido -->
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="explorer-search" placeholder="Buscar período, fósil o época (ej. Jurásico, Trilobites)..." autocomplete="off">
+          <button id="btn-clear-search" class="clear-btn" style="display:none;">✕</button>
+        </div>
+
+        <!-- Filtro Rápido de Eones -->
+        <div class="filter-chips" id="eon-filter-chips">
+          <button class="chip active" data-filter="all">Todos</button>
+          <button class="chip" data-filter="phanerozoic">Fanerozoico</button>
+          <button class="chip" data-filter="proterozoic">Proterozoico</button>
+          <button class="chip" data-filter="archean">Arcaico</button>
+          <button class="chip" data-filter="hadean">Hádico</button>
+        </div>
+
+        <!-- Árbol Cronoestratigráfico Interactivo -->
+        <div id="chrono-tree-container" class="chrono-tree">
+          <!-- Se inyecta dinámicamente con JavaScript -->
+        </div>
+      </section>
+
+
+      <!-- PESTAÑA 2: JUEGOS Y RETOS INTERACTIVOS -->
+      <section id="view-games" class="tab-view">
+        <div class="view-intro">
+          <h2>Zona de Juegos</h2>
+          <p>Pon a prueba tu dominio de la escala cronoestratigráfica 2023 con 4 desafíos interactivos.</p>
+        </div>
+
+        <!-- Selector de Juegos en Tarjetas estilo iOS -->
+        <div class="game-selector-grid">
+          <div class="game-card" data-game="order">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #10B981, #059669);">🧩</div>
+            <div class="game-card-info">
+              <h3>Orden Cronológico</h3>
+              <p>Ordena los períodos y eras del más antiguo al más reciente.</p>
+              <span class="game-badge">Arrastra o Pulsa</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+
+          <div class="game-card" data-game="trivia">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #3B82F6, #1D4ED8);">⚡</div>
+            <div class="game-card-info">
+              <h3>Trivia Estratigráfica</h3>
+              <p>Preguntas rápidas sobre fósiles, extinciones y límites oficiales.</p>
+              <span class="game-badge">Contrarreloj</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+
+          <div class="game-card" data-game="guesser">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #F59E0B, #D97706);">🎯</div>
+            <div class="game-card-info">
+              <h3>Adivina el Millón (Ma)</h3>
+              <p>Ajusta el control deslizante para clavar la fecha del evento.</p>
+              <span class="game-badge">Precisión</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+
+          <div class="game-card" data-game="memory">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #EC4899, #BE185D);">🃏</div>
+            <div class="game-card-info">
+              <h3>Fósiles y Estratos (Memoria)</h3>
+              <p>Encuentra las parejas de períodos y sus fósiles característicos.</p>
+              <span class="game-badge">Memoria Visual</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+
+          <div class="game-card" data-game="intruder">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9);">🕵️‍♂️</div>
+            <div class="game-card-info">
+              <h3>El Intruso del Estrato</h3>
+              <p>Detecta el período, fósil o límite infiltrado que no pertenece al grupo.</p>
+              <span class="game-badge">Deducción Crítica</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+
+          <div class="game-card" data-game="stacker">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #059669, #0D9488);">🧱</div>
+            <div class="game-card-info">
+              <h3>Columna Estratigráfica</h3>
+              <p>Construye la columna de la base a la cima usando el Principio de Steno.</p>
+              <span class="game-badge">Leyes de Steno</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+
+          <div class="game-card" data-game="flashcards">
+            <div class="game-card-icon" style="background: linear-gradient(135deg, #F43F5E, #E11D48);">🎴</div>
+            <div class="game-card-info">
+              <h3>Flashcards 3D de Estudio</h3>
+              <p>Tarjetas con giro 3D: memoriza edades Ma, fósiles clave y trucos mnemotécnicos.</p>
+              <span class="game-badge">Memorización Activa</span>
+            </div>
+            <span class="game-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- ÁREA ACTIVA DEL JUEGO SELECCIONADO (Se carga al pulsar un juego) -->
+        <div id="active-game-container" class="active-game-area" style="display: none;">
+          <!-- Barra superior del juego activo -->
+          <div class="active-game-header">
+            <button id="btn-back-to-games" class="back-link">‹ Volver a juegos</button>
+            <h3 id="active-game-title">Juego</h3>
+          </div>
+
+          <!-- CONTENIDO JUEGO 1: ORDEN CRONOLÓGICO -->
+          <div id="game-order-view" class="game-screen" style="display: none;">
+            <div class="level-selector-row">
+              <label for="order-level-select">Reto:</label>
+              <select id="order-level-select" class="ios-select">
+                <option value="0">1. Eras del Fanerozoico (3 eras)</option>
+                <option value="1">2. Períodos del Paleozoico (6 períodos)</option>
+                <option value="2">3. Mesozoico y Cenozoico (6 períodos)</option>
+                <option value="3" selected>4. Todos los 12 Períodos del Fanerozoico</option>
+                <option value="4">5. Épocas del Cenozoico (7 épocas)</option>
+              </select>
+            </div>
+
+            <p class="game-instruction">Ordena los bloques de <b>MÁS ANTIGUO</b> (arriba) a <b>MÁS RECIENTE</b> (abajo):</p>
+            
+            <div id="order-items-list" class="orderable-list">
+              <!-- Elementos ordenables inyectados con JS -->
+            </div>
+
+            <div class="game-controls-bar">
+              <button id="btn-check-order" class="btn-primary">Comprobar Orden 🎯</button>
+              <button id="btn-reset-order" class="btn-secondary">Mezclar 🔀</button>
+            </div>
+            <div id="order-feedback" class="feedback-box" style="display:none;"></div>
+          </div>
+
+          <!-- CONTENIDO JUEGO 2: TRIVIA -->
+          <div id="game-trivia-view" class="game-screen" style="display: none;">
+            <div class="trivia-progress-bar">
+              <div id="trivia-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="trivia-meta-row">
+              <span id="trivia-q-index">Pregunta 1/12</span>
+              <span id="trivia-timer" class="timer-tag">⏱ 20s</span>
+            </div>
+
+            <div class="trivia-question-card">
+              <p id="trivia-question-text">Cargando pregunta...</p>
+            </div>
+
+            <div id="trivia-options-grid" class="trivia-options">
+              <!-- Botones de opciones -->
+            </div>
+
+            <div id="trivia-explanation" class="explanation-card" style="display: none;">
+              <p id="trivia-explanation-text"></p>
+              <button id="btn-next-trivia" class="btn-primary">Siguiente Pregunta ›</button>
+            </div>
+          </div>
+
+          <!-- CONTENIDO JUEGO 3: ESTIMADOR TEMPORAL (TIME GUESSER) -->
+          <div id="game-guesser-view" class="game-screen" style="display: none;">
+            <div class="guesser-card">
+              <span class="guesser-tag">ADIVINA LA FECHA EN MILLONES DE AÑOS (Ma)</span>
+              <h3 id="guesser-item-title">Límite K-Pg (Extinción de los dinosaurios)</h3>
+              <p id="guesser-item-hint" class="guesser-hint">Pista: Asteroide en Chicxulub</p>
+            </div>
+
+            <div class="guesser-interactive-area">
+              <div class="guesser-value-display">
+                <span id="guesser-slider-val">250</span> <span class="unit">Ma</span>
+              </div>
+              <input type="range" id="guesser-slider" min="0" max="600" step="1" value="250" class="ios-slider">
+              <div class="slider-ticks">
+                <span>0 Ma (Hoy)</span>
+                <span>300 Ma</span>
+                <span>600 Ma (Precámbrico)</span>
+              </div>
+            </div>
+
+            <div class="game-controls-bar">
+              <button id="btn-submit-guess" class="btn-primary">Confirmar Estimación 🎯</button>
+              <button id="btn-next-guess" class="btn-secondary" style="display:none;">Siguiente Reto ›</button>
+            </div>
+
+            <div id="guesser-feedback" class="feedback-box" style="display: none;"></div>
+          </div>
+
+          <!-- CONTENIDO JUEGO 4: MEMORY MATCH -->
+          <div id="game-memory-view" class="game-screen" style="display: none;">
+            <div class="memory-hud">
+              <span>Movimientos: <b id="memory-moves">0</b></span>
+              <span>Parejas: <b id="memory-pairs">0/8</b></span>
+              <button id="btn-restart-memory" class="icon-small-btn" title="Reiniciar">🔄</button>
+            </div>
+            
+            <p class="game-instruction">Empareja cada <b>Fósil / Evento clave</b> con su <b>Período geológico</b>:</p>
+
+            <div id="memory-board" class="memory-grid">
+              <!-- Tarjetas volteables inyectadas con JS -->
+            </div>
+          </div>
+
+          <!-- CONTENIDO JUEGO 5: EL INTRUSO DEL ESTRATO -->
+          <div id="game-intruder-view" class="game-screen" style="display: none;">
+            <div class="intruder-hud">
+              <span id="intruder-round-indicator">Caso 1/10</span>
+              <span id="intruder-score-pill" class="hud-pill">⭐ +100 pts</span>
+            </div>
+
+            <div class="intruder-card">
+              <div class="intruder-theme-tag" id="intruder-theme-tag">Tema geológico</div>
+              <h3 id="intruder-question-text" class="intruder-question">¿Cuál de estos períodos NO pertenece a la era indicada?</h3>
+              <p class="intruder-hint">Toca la opción que sea el <b>intruso</b> geológico:</p>
+            </div>
+
+            <div id="intruder-options-grid" class="intruder-grid">
+              <!-- Opciones inyectadas por JS -->
+            </div>
+
+            <div id="intruder-feedback" class="explanation-card" style="display: none;">
+              <div id="intruder-feedback-header" class="feedback-status-title"></div>
+              <p id="intruder-explanation-text"></p>
+              <div class="game-controls-bar">
+                <button id="btn-next-intruder" class="btn-primary">Siguiente Caso ›</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTENIDO JUEGO 6: COLUMNA ESTRATIGRÁFICA (PRINCIPIO DE STENO) -->
+          <div id="game-stacker-view" class="game-screen" style="display: none;">
+            <div class="level-selector-row">
+              <label for="stacker-level-select">Columna:</label>
+              <select id="stacker-level-select" class="ios-select">
+                <option value="0" selected>1. Columna del Mesozoico (3 estratos)</option>
+                <option value="1">2. Columna del Cenozoico (3 estratos)</option>
+                <option value="2">3. Columna del Paleozoico (6 estratos)</option>
+              </select>
+            </div>
+
+            <div class="steno-rule-box">
+              <span class="steno-icon">📜</span>
+              <div>
+                <b>Principio de Superposición de Steno:</b> En estratos no alterados, los <b>más antiguos</b> quedan en la base (abajo) y los <b>más recientes</b> en la cima (arriba).
+              </div>
+            </div>
+
+            <p class="game-instruction" id="stacker-desc">Coloca los estratos en orden: los más antiguos abajo y los más recientes arriba:</p>
+
+            <div class="stacker-workspace">
+              <div class="stacker-column-wrapper">
+                <div class="stacker-column-label cima-label">▲ CIMA (Más Reciente)</div>
+                <div id="stacker-pillar" class="stacker-pillar">
+                  <!-- Ranuras de estratos inyectadas por JS -->
+                </div>
+                <div class="stacker-column-label base-label">▼ BASE (Más Antiguo)</div>
+              </div>
+
+              <div class="stacker-palette-wrapper">
+                <div class="palette-title">Estratos por colocar:</div>
+                <div id="stacker-palette" class="stacker-palette">
+                  <!-- Bloques para colocar inyectados por JS -->
+                </div>
+              </div>
+            </div>
+
+            <div class="game-controls-bar">
+              <button id="btn-check-stacker" class="btn-primary">Comprobar Columna 🏗️</button>
+              <button id="btn-reset-stacker" class="btn-secondary">Reiniciar 🔄</button>
+            </div>
+
+            <div id="stacker-feedback" class="feedback-box" style="display: none;"></div>
+          </div>
+
+          <!-- CONTENIDO JUEGO 7: FLASHCARDS GEOLÓGICAS 3D -->
+          <div id="game-flashcards-view" class="game-screen" style="display: none;">
+            <div class="flashcards-hud">
+              <span id="flashcard-counter">Tarjeta 1 / 12</span>
+              <span id="flashcard-mastered-pill" class="hud-pill">Dominadas: <b id="flashcard-mastered-count">0</b>/12</span>
+            </div>
+
+            <div class="flashcard-viewport">
+              <div id="geological-flashcard" class="flashcard-3d">
+                <!-- Cara Frontal -->
+                <div class="flashcard-face flashcard-front">
+                  <div class="flashcard-header-strip" id="flashcard-strip"></div>
+                  <div class="flashcard-body">
+                    <span class="flashcard-era-badge" id="flashcard-era">Era Paleozoica</span>
+                    <h2 class="flashcard-period-title" id="flashcard-title">Cámbrico</h2>
+                    <div class="flashcard-range-badge" id="flashcard-range">538.8 - 485.4 Ma</div>
+                    <div class="flashcard-duration-sub" id="flashcard-duration">Duración: 53.4 Ma</div>
+                    <div class="flashcard-prompt-flip">
+                      <span>🔄 Toca la tarjeta para voltear y ver fósiles y claves</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cara Trasera -->
+                <div class="flashcard-face flashcard-back">
+                  <div class="flashcard-back-header">
+                    <span id="flashcard-back-period">Cámbrico</span>
+                    <span class="flashcard-back-badge">Claves Geológicas</span>
+                  </div>
+                  <div class="flashcard-back-content">
+                    <div class="flashcard-section">
+                      <span class="flashcard-section-label">🦴 Fósiles Guía:</span>
+                      <p id="flashcard-fossils" class="flashcard-section-text"></p>
+                    </div>
+                    <div class="flashcard-section">
+                      <span class="flashcard-section-label">🌍 Hitos Principales:</span>
+                      <p id="flashcard-milestones" class="flashcard-section-text"></p>
+                    </div>
+                    <div class="flashcard-section mnemonic-box">
+                      <span class="flashcard-section-label">💡 Mnemotecnia:</span>
+                      <p id="flashcard-mnemonic" class="flashcard-mnemonic-text"></p>
+                    </div>
+                  </div>
+                  <div class="flashcard-prompt-flip-back">
+                    <span>🔄 Toca para volver al frente</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flashcard-actions-row">
+              <button id="btn-flashcard-prev" class="btn-secondary" title="Tarjeta anterior">‹ Anterior</button>
+              <button id="btn-flashcard-flip" class="btn-secondary" title="Girar">Voltear 🔄</button>
+              <button id="btn-flashcard-next" class="btn-secondary" title="Siguiente tarjeta">Siguiente ›</button>
+            </div>
+
+            <div class="flashcard-mastery-row">
+              <button id="btn-flashcard-review" class="btn-review">Repasar después 🔁</button>
+              <button id="btn-flashcard-master" class="btn-master">¡Dominada! ✅</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- PESTAÑA 3: TRUCOS MNEMOTÉCNICOS -->
+      <section id="view-mnemonics" class="tab-view">
+        <div class="view-intro">
+          <h2>Reglas Mnemotécnicas</h2>
+          <p>Frases ingeniosas y probadas para memorizar la tabla sin esfuerzo en exámenes y trabajos de geología.</p>
+        </div>
+
+        <div id="mnemonics-list" class="mnemonics-container">
+          <!-- Inyectado por JS -->
+        </div>
+
+        <!-- Resumen Rápido con los 12 Períodos en orden -->
+        <div class="quick-summary-card">
+          <h3>⚡ Los 12 Períodos del Fanerozoico de un vistazo</h3>
+          <p class="summary-subtitle">(De antiguo a moderno, con fecha de inicio en Ma)</p>
+          <div class="mini-chrono-strip">
+            <span style="background:#7FA056; color:#fff;">Cámbrico 538.8</span>
+            <span style="background:#009270; color:#fff;">Ordovícico 485.4</span>
+            <span style="background:#B3E1B6; color:#111;">Silúrico 443.8</span>
+            <span style="background:#CB8C37; color:#fff;">Devónico 419.2</span>
+            <span style="background:#67A599; color:#fff;">Carbonífero 358.9</span>
+            <span style="background:#F04028; color:#fff;">Pérmico 298.9</span>
+            <span style="background:#812B92; color:#fff;">Triásico 251.9</span>
+            <span style="background:#34B2C9; color:#fff;">Jurásico 201.4</span>
+            <span style="background:#7FC64E; color:#111;">Cretácico 145.0</span>
+            <span style="background:#FD9A52; color:#222;">Paleógeno 66.0</span>
+            <span style="background:#FFE619; color:#222;">Neógeno 23.0</span>
+            <span style="background:#F9F97F; color:#222;">Cuaternario 2.6</span>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- PESTAÑA 4: LOGROS Y MEDALLAS -->
+      <section id="view-achievements" class="tab-view">
+        <div class="view-intro">
+          <h2>Logros y Medallas</h2>
+          <p>Desbloquea insignias a medida que demuestras tu sabiduría geológica.</p>
+        </div>
+
+        <div id="achievements-list" class="achievements-grid">
+          <!-- Inyectado por JS -->
+        </div>
+
+        <div class="reset-data-box">
+          <button id="btn-reset-stats" class="btn-text-danger">Restablecer progreso</button>
+        </div>
+      </section>
+
+      <!-- PESTAÑA 5: AYUDAS DE LOS USUARIOS (EXCLUSIVA ADMINISTRADOR: danigarmo) -->
+      <section id="view-admin" class="tab-view">
+        <div class="view-intro admin-intro">
+          <div class="admin-intro-badge">👑 PANEL PRIVADO · ADMINISTRACIÓN</div>
+          <h2>Ayudas de los usuarios</h2>
+          <p>Mensajes y propuestas de mejora enviadas por la comunidad, filtradas y validadas por el sistema de detección inteligente.</p>
+        </div>
+
+        <!-- Métricas del Administrador -->
+        <div class="admin-stats-row">
+          <div class="admin-stat-card">
+            <span class="admin-stat-num" id="admin-stat-total">0</span>
+            <span class="admin-stat-lbl">Total Ayudas</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="admin-stat-num highlight" id="admin-stat-new">0</span>
+            <span class="admin-stat-lbl">Por Revisar</span>
+          </div>
+          <div class="admin-stat-card">
+            <span class="admin-stat-num" id="admin-stat-valid">100%</span>
+            <span class="admin-stat-lbl">Filtro IA Activo</span>
+          </div>
+        </div>
+
+        <!-- Filtros Rápidos -->
+        <div class="admin-filters-bar" id="admin-filter-chips">
+          <button class="chip active" data-admin-filter="all">Todas</button>
+          <button class="chip" data-admin-filter="nuevo">Sin revisar</button>
+          <button class="chip" data-admin-filter="revisado">Revisadas</button>
+          <button class="chip" data-admin-filter="geologia">Geológicas</button>
+          <button class="chip" data-admin-filter="ui">Mejoras UI</button>
+        </div>
+
+        <!-- Lista de Mensajes y Ayudas -->
+        <div id="admin-feedback-container" class="admin-feedback-grid">
+          <!-- Inyectado dinámicamente con JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BARRA INFERIOR DE PESTAÑAS TIPO iOS TAB BAR -->
+    <nav class="ios-tabbar">
+      <button class="tabbar-item active" data-tab="explore">
+        <span class="tabbar-icon">🗺️</span>
+        <span class="tabbar-label">Explorar</span>
+      </button>
+      <button class="tabbar-item" data-tab="games">
+        <span class="tabbar-icon">🎮</span>
+        <span class="tabbar-label">Juegos</span>
+      </button>
+      <button class="tabbar-item" data-tab="mnemonics">
+        <span class="tabbar-icon">💡</span>
+        <span class="tabbar-label">Memoria</span>
+      </button>
+      <button class="tabbar-item" data-tab="achievements">
+        <span class="tabbar-icon">🏆</span>
+        <span class="tabbar-label">Logros</span>
+      </button>
+      <!-- Pestaña admin móvil (sólo visible para danigarmo) -->
+      <button id="mobile-tab-admin" class="tabbar-item admin-tab" data-tab="admin" style="display:none;">
+        <span class="tabbar-icon">📬</span>
+        <span class="tabbar-label">Ayudas</span>
+      </button>
+    </nav>
+
+    <!-- MODAL DETALLE DE PERÍODO / EÓN (Ficha Geológica) -->
+    <div id="detail-modal" class="modal-backdrop" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span id="modal-category-badge" class="category-badge">PERÍODO</span>
+            <h2 id="modal-title">Nombre</h2>
+            <span id="modal-time-range" class="modal-time">0 - 0 Ma</span>
+          </div>
+          <button id="btn-close-modal" class="modal-close-btn">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="modal-section">
+            <h4>📖 Descripción General</h4>
+            <p id="modal-description"></p>
+          </div>
+
+          <!-- SECCIÓN DE SUBDIVISIONES DE LAS ÉPOCAS (SERIES Y PISOS) -->
+          <div class="modal-section" id="modal-subdivisions-section">
+            <div class="section-title-row">
+              <h4>🏛️ Subdivisiones de las Épocas (Series y Pisos)</h4>
+              <span class="subdivisions-hint">Escala Oficial ICS 2023</span>
+            </div>
+            <div id="modal-subdivisions-list" class="subdivisions-container"></div>
+            <div id="modal-epochs-list" class="tags-container" style="display:none;"></div>
+          </div>
+
+          <div class="modal-section">
+            <h4>🦴 Fósiles Guía Representativos</h4>
+            <p id="modal-fossils"></p>
+          </div>
+
+          <div class="modal-section">
+            <h4>🌋 Hitos Geológicos y Evolutivos</h4>
+            <p id="modal-milestones"></p>
+          </div>
+
+          <div id="modal-mnemonic-section" class="modal-section" style="display:none;">
+            <h4>💡 Mnemotecnia</h4>
+            <p id="modal-mnemonic" class="mnemonic-quote"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL INFORMATIVO (Acerca de la Tabla ICS 2023) -->
+    <div id="info-modal" class="modal-backdrop" style="display:none;">
+      <div class="modal-sheet">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <h2>Acerca de la Tabla 2023</h2>
+          <button id="btn-close-info" class="modal-close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <!-- Tarjeta de Autoría Destacada -->
+          <div class="creator-badge-card">
+            <div class="creator-badge-avatar">👨‍💻</div>
+            <div class="creator-badge-info">
+              <span class="creator-badge-label">AUTORÍA DEL PROYECTO</span>
+              <h3 class="creator-badge-name">Creado por Daniel Garcia Morueco</h3>
+              <p class="creator-badge-collab">con ayuda de la IA</p>
+            </div>
+          </div>
+
+          <p>Esta aplicación interactiva está basada en la <b>Tabla Cronoestratigráfica Internacional (versión 2023/09)</b>, ratificada por la <b>Comisión Internacional de Estratigrafía (ICS)</b> y la <b>Unión Internacional de Ciencias Geológicas (IUGS)</b>.</p>
+          
+          <h4>🎨 Código de Colores Oficial</h4>
+          <p>Los colores utilizados corresponden con precisión a la paleta estandarizada por la Comisión Internacional de Estratigrafía (CMYK / RGB oficial).</p>
+
+          <h4>💻 Adaptado para Ordenador y Móvil</h4>
+          <p>La interfaz se adapta automáticamente si estás navegando desde un ordenador (pantalla ancha, vistas en cuadrícula, diálogos centrados) o desde tu iPhone/móvil.</p>
+
+          <h4>📱 Instalación en iPhone</h4>
+          <p>Para disfrutar de la experiencia completa como aplicación nativa en iOS:</p>
+          <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin: 10px 0;">
+            <li>Abre esta web en Safari en tu iPhone.</li>
+            <li>Toca el botón <b>Compartir</b> (el icono con una flecha hacia arriba).</li>
+            <li>Selecciona <b>"Añadir a la pantalla de inicio"</b>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE INICIO DE SESIÓN / REGISTRO MANUAL -->
+    <div id="auth-modal" class="modal-backdrop" style="display:none;">
+      <div class="modal-sheet auth-sheet">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <div>
+            <span class="category-badge">CUENTA Y PROGRESO</span>
+            <h2>Iniciar Sesión</h2>
+          </div>
+          <button id="btn-close-auth" class="modal-close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="auth-notice">Inicia sesión manualmente para guardar automáticamente tus puntos, medallas y racha en tu cuenta.</p>
+
+          <!-- Selector de Modo Auth: Login / Registro -->
+          <div class="auth-tabs-row">
+            <button class="auth-tab active" data-mode="login">Iniciar Sesión</button>
+            <button class="auth-tab" data-mode="register">Crear Cuenta</button>
+          </div>
+
+          <!-- Formulario de Autenticación Manual -->
+          <form id="auth-form" class="auth-form" onsubmit="return false;">
+            <div id="auth-field-name" class="form-group" style="display:none;">
+              <label for="auth-input-name">Nombre y Apellidos:</label>
+              <input type="text" id="auth-input-name" placeholder="Nombre y apellidos" autocomplete="name">
+            </div>
+
+            <div class="form-group">
+              <label for="auth-input-user" id="lbl-auth-user">Usuario o Correo:</label>
+              <input type="text" id="auth-input-user" placeholder="Usuario o correo" required autocomplete="username">
+            </div>
+
+            <div id="auth-field-email" class="form-group" style="display:none;">
+              <label for="auth-input-email">Correo Electrónico:</label>
+              <input type="email" id="auth-input-email" placeholder="Correo electrónico" autocomplete="email">
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-top:3px; display:block;">
+                Recibirás un enlace por correo para confirmar tu cuenta.
+              </span>
+            </div>
+
+            <div class="form-group password-group">
+              <label for="auth-input-pass">Contraseña:</label>
+              <div class="password-input-wrapper">
+                <input type="password" id="auth-input-pass" placeholder="Contraseña" required autocomplete="current-password">
+                <button type="button" id="btn-toggle-password" class="btn-toggle-eye" title="Mostrar/ocultar contraseña" aria-label="Mostrar u ocultar contraseña">
+                  👁️
+                </button>
+              </div>
+
+              <!-- Medidor de seguridad de contraseña (dinámico para registro) -->
+              <div id="password-strength-container" class="password-strength-box" style="display:none;">
+                <div class="strength-header">
+                  <span class="strength-title">Seguridad:</span>
+                  <span id="strength-label" class="strength-status">Esperando...</span>
+                </div>
+                <div class="strength-meter-bar">
+                  <div id="strength-meter-fill" class="strength-fill"></div>
+                </div>
+                
+                <!-- Lista de requisitos en tiempo real -->
+                <ul class="password-requirements-list">
+                  <li id="req-length" class="req-item invalid">
+                    <span class="req-icon">✕</span> Mínimo 8 caracteres
+                  </li>
+                  <li id="req-uppercase" class="req-item invalid">
+                    <span class="req-icon">✕</span> Al menos 1 letra mayúscula (A-Z)
+                  </li>
+                  <li id="req-bonus" class="req-item optional">
+                    <span class="req-icon">○</span> Incluir números o símbolos <i>(recomendado)</i>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-auth-submit" class="btn-primary" style="width: 100%; margin-top: 10px;">
+              Iniciar Sesión
+            </button>
+          </form>
+
+          <div id="auth-error-msg" class="feedback-box error" style="display:none;"></div>
+          <div id="auth-success-msg" class="feedback-box success" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL PARA ENVIAR AYUDAS / SUGERENCIAS CON FILTRO DE IA -->
+    <div id="feedback-modal" class="modal-backdrop" style="display:none;">
+      <div class="modal-sheet feedback-sheet">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <div>
+            <span class="category-badge">COMUNIDAD Y MEJORA</span>
+            <h2>Ayúdanos a Mejorar</h2>
+          </div>
+          <button id="btn-close-feedback" class="modal-close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p>¿Has detectado algún dato geológico que corregir, una idea de juego o una mejora para la web? Cuéntaselo a nuestro equipo.</p>
+
+          <!-- Tarjeta indicativa de remitente -->
+          <div id="feedback-sender-chip" class="sender-indicator">
+            <span id="feedback-sender-avatar">👤</span>
+            <div class="sender-indicator-details">
+              <span class="sender-label">Remitente:</span>
+              <strong id="feedback-sender-name">Usuario Invitado</strong>
+            </div>
+          </div>
+
+          <form id="feedback-form" onsubmit="return false;">
+            <div class="form-group">
+              <label for="feedback-category">Tipo de aportación:</label>
+              <select id="feedback-category" class="ios-select">
+                <option value="Corrección geológica">🪨 Corrección geológica o de estratos</option>
+                <option value="Propuesta de juego">🎮 Nueva idea o mecánica de juego</option>
+                <option value="Mejora de interfaz">📱 Mejora visual o adaptación móvil</option>
+                <option value="Otro aporte">💡 Otra sugerencia constructiva</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="feedback-text">Tu mensaje o sugerencia:</label>
+              <textarea id="feedback-text" rows="4" class="ios-textarea" placeholder="Ej: En la ficha del Devónico podrías añadir a Tiktaalik como fósil de transición, o en la Trivia sumar preguntas sobre los esquistos de Burgess..."></textarea>
+              <div class="textarea-counter">
+                <span id="feedback-char-count">0 caracteres</span>
+                <span class="ai-shield-tag">🛡️ Moderado por Filtro IA Constructivo</span>
+              </div>
+            </div>
+
+            <!-- Caja de Estado / Feedback de Validación Inteligente -->
+            <div id="feedback-validation-alert" class="feedback-box" style="display:none;"></div>
+
+            <button type="submit" id="btn-submit-feedback" class="btn-primary" style="width:100%; margin-top:8px;">
+              Enviar Aportación al Equipo ✨
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE PERFIL DE USUARIO / CERRAR SESIÓN -->
+    <div id="user-profile-modal" class="modal-backdrop" style="display:none;">
+      <div class="modal-sheet profile-sheet">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <h2>Mi Perfil</h2>
+          <button id="btn-close-profile" class="modal-close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="profile-card-header">
+            <div id="profile-avatar" class="profile-avatar-circle">👨‍🎓</div>
+            <div class="profile-main-info">
+              <h3 id="profile-name">Usuario</h3>
+              <span id="profile-email">usuario@correo.com</span>
+              <span id="profile-badge-role" class="badge-tag">Jugador</span>
+            </div>
+          </div>
+
+          <div class="profile-stats-grid">
+            <div class="profile-stat-box">
+              <span class="stat-box-lbl">Puntos Totales</span>
+              <strong id="profile-points" class="stat-box-val">0</strong>
+            </div>
+            <div class="profile-stat-box">
+              <span class="stat-box-lbl">Rango Actual</span>
+              <strong id="profile-rank" class="stat-box-val" style="font-size:0.85rem;">Geólogo Aprendiz</strong>
+            </div>
+          </div>
+
+          <div id="profile-admin-access-block" style="display:none; margin-top:14px;">
+            <button id="btn-goto-admin-panel" class="btn-primary" style="width:100%;">
+              📬 Abrir Buzón "Ayudas de los usuarios"
+            </button>
+          </div>
+
+          <button id="btn-logout-action" class="btn-secondary" style="width:100%; margin-top:14px; color:var(--accent-rose);">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pie de página para ordenador / pantallas medianas y grandes -->
+    <footer class="app-footer">
+      <p>CronoEstrato 2023 · Tabla Cronoestratigráfica Internacional (ICS / IUGS)</p>
+      <p class="footer-credit">Desarrollado por el <b>Equipo CronoEstrato</b> con ayuda de la IA</p>
+    </footer>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
