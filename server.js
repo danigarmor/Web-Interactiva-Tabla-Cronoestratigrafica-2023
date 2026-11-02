@@ -290,6 +290,21 @@ function setSessionCookie(res, sessionData) {
 // SERVIDOR PRINCIPAL
 // ==========================================================================
 const server = http.createServer(async (req, res) => {
+  // ==========================================================================
+  // FORZAR HTTPS (redirige HTTP -> HTTPS)
+  // Funciona en Fly.io (x-forwarded-proto) y en local con proxy TLS
+  // ==========================================================================
+  const proto = req.headers['x-forwarded-proto'] || (req.connection.encrypted ? 'https' : 'http');
+  if (proto === 'http' && process.env.NODE_ENV === 'production') {
+    const host = req.headers.host;
+    const targetUrl = `https://${host}${req.url}`;
+    res.writeHead(301, {
+      'Location': targetUrl,
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
+    });
+    return res.end();
+  }
+
   // Manejo de CORS Preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
