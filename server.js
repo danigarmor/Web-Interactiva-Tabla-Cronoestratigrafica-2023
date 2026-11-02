@@ -35,6 +35,18 @@ try {
   nodemailer = null;
 }
 
+// Google OAuth - usar google-auth-library si está disponible
+let googleAuth = null;
+try {
+  const { OAuth2Client } = require('google-auth-library');
+  googleAuth = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+  );
+} catch (e) {
+  googleAuth = null;
+}
+
 const PORT = process.env.PORT || 8080;
 // Usar variable de entorno para base de datos (en Fly.io /data/database.json)
 const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'database.json');
@@ -546,12 +558,108 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 4. REGISTRO/LOGIN CON GOOGLE DESHABILITADO
-  if (req.method === 'POST' && pathname === '/api/auth/google-verify') {
-    return sendJSON(res, 400, {
-      success: false,
-      message: 'El registro con Google ha sido desactivado. Por favor, crea tu cuenta o inicia sesión manualmente.'
-    });
+  // 4. LOGIN CON GOOGLE (OAuth 2.0 - verifica ID Token y crea/loguea usuario)
+  if (req.method === 'POST' && pathname === '/api/auth/google') {
+    try {
+      if (!googleAuth) {
+        return sendJSON(res, 501, {
+          success: false,
+          message: 'Google Auth no configurado en el servidor. Contacta al administrador.'
+        });
+      }
+
+      const { credential } = await parseBody(req);
+      if (!credential) {
+        return sendJSON(res, 400, { success: false, message: 'Token de Google no proporcionado.' });
+      }
+
+      // Verificar el ID Token con Google
+      const ticket = await googleAuth.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+
+      const payload = ticket.getPayload();
+      const googleId = payload.sub;
+      const email = payload.email;
+      const name = payload.name || email.split('@')[0];
+      const picture = payload.picture;
+
+      if (!email || !payload.email_verified) {
+        return sendJSON(res, 400, { success: false, message: 'El correo de Google no está verificado.' });
+      }
+
+      const db = getDB();
+      const cleanEmail = email.toLowerCase();
+
+      // Buscar usuario existente por email
+      let user = db.users.find(u => u.email.toLowerCase() === cleanEmail);
+
+      if (!user) {
+        // Crear nuevo usuario con Google
+        const newUser = {
+          id: 'usr-' + Date.now(),
+          username: 'g_' + email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now().toString(36),
+          name: name,
+          email: cleanEmail,
+          passwordHash: null, // Sin contraseña, solo Google
+          verified: true, // Google ya verificó el email
+          verificationToken: null,
+          isAdmin: cleanEmail === 'gardanie73@gmail.com', // Admin si es tu correo
+          provider: 'google',
+          avatar: picture || '🌐',
+          score: 0,
+          streak: 0,
+          achievements: {},
+          googleId: googleId,
+          createdAt: new Date().toISOString()
+        };
+
+        db.users.push(newUser);
+        user = newUser;
+        saveDB(db);
+      } else if (user.provider !== 'google') {
+        // Usuario existe con contraseña local - vincular cuenta Google
+        user.provider = 'google';
+        user.googleId = googleId;
+        user.avatar = picture || user.avatar;
+        user.verified = true;
+        saveDB(db);
+      }
+
+      // Crear cookie de sesión
+      const sessionData = {
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        isAdmin: !!user.isAdmin,
+        provider: 'google',
+        avatar: user.avatar || '🌐',
+        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 días
+      };
+
+      const cookie = createSessionCookie(sessionData);
+
+      return sendJSON(res, 200, {
+        success: true,
+        message: 'Sesión iniciada con Google.',
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          email: user.email,
+          isAdmin: !!user.isAdmin,
+          provider: 'google',
+          avatar: user.avatar || '🌐',
+          score: user.score || 0,
+          streak: user.streak || 0,
+          achievements: user.achievements || {}
+        }
+      }, cookie);
+    } catch (err) {
+      console.error('Error en /api/auth/google:', err);
+      return sendJSON(res, 500, { success: false, message: 'Error autenticando con Google: ' + err.message });
+    }
   }
 
   // 5. GUARDAR PROGRESO DEL USUARIO

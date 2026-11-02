@@ -2201,6 +2201,94 @@ function initAuthUI() {
 
   let activeMode = 'login';
 
+  // Inicializar Google Sign-In
+  initGoogleSignIn();
+}
+
+function initGoogleSignIn() {
+  // Esperar a que cargue la librería de Google Identity Services
+  const tryInitGoogle = () => {
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      const clientId = 'TU_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // Reemplazar con tu Client ID real
+
+      if (clientId.includes('TU_GOOGLE_CLIENT_ID')) {
+        // Si no hay Client ID configurado, ocultar el botón
+        const container = document.getElementById('google-signin-container');
+        if (container) container.style.display = 'none';
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      window.google.accounts.id.renderButton(
+        document.getElementById('btn-google-signin'),
+        {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard',
+          text: 'continue_with',
+          shape: 'rectangular',
+          logo_alignment: 'center',
+          width: '100%'
+        }
+      );
+    } else {
+      // Reintentar en 100ms
+      setTimeout(tryInitGoogle, 100);
+    }
+  };
+  tryInitGoogle();
+}
+
+async function handleGoogleCredentialResponse(response) {
+  const credential = response.credential;
+  if (!credential) return;
+
+  sounds.playPop();
+
+  try {
+    const resp = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential })
+    });
+    const data = await resp.json();
+
+    if (!data.success) {
+      sounds.playError();
+      const errorEl = document.getElementById('auth-error-msg');
+      if (errorEl) {
+        errorEl.style.display = 'block';
+        errorEl.textContent = data.message || 'Error al iniciar sesión con Google.';
+      }
+      return;
+    }
+
+    // Sesión exitosa
+    AuthManager.login(data.user);
+    document.getElementById('auth-modal').style.display = 'none';
+    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate([10, 30, 20]);
+
+    if (data.user.isAdmin) {
+      alert('👑 ¡Bienvenido! Has iniciado sesión como Administrador. El apartado "Ayudas de los usuarios" está activo en el menú.');
+      const adminNav = document.getElementById('nav-item-admin');
+      if (adminNav) adminNav.click();
+    }
+  } catch (err) {
+    sounds.playError();
+    const errorEl = document.getElementById('auth-error-msg');
+    if (errorEl) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = 'Error de conexión con el servidor.';
+    }
+  }
+}
+
   // Si la URL viene tras verificar correo (?login=true&user=...)
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('login') === 'true') {

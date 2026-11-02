@@ -1,31 +1,31 @@
-# fly.toml - Configuración para Fly.io
-# Ejecutar: fly launch (primera vez) y luego fly deploy
+# fly.toml app configuration file generated for cronoestrato-2023 on 2026-11-02T22:58:21+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "cronoestrato-2023"
-primary_region = "mad"
+app = 'cronoestrato-2023'
+primary_region = 'cdg'
 
 [build]
-  # Usar Dockerfile personalizado
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  PORT = "8080"
-  NODE_ENV = "production"
+  NODE_ENV = 'production'
+  PORT = '8080'
+
+[[mounts]]
+  source = 'cronoestrato_data'
+  destination = '/data'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 
-# Volumen persistente para database.json
-[mounts]
-  source = "cronoestrato_data"
-  destination = "/data"
-
-# Recursos gratuitos (shared-cpu-1x, 256MB RAM)
 [[vm]]
-  size = "shared-cpu-1x"
+  size = 'shared-cpu-1x'
+  memory = '256mb'
   cpus = 1
   memory_mb = 256
