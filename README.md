@@ -47,55 +47,6 @@
 8. **🔊 Efectos Sonoros Sintetizados**:
    - Generados en tiempo real mediante **Web Audio API** (sin descargas ni dependencias pesadas).
 
----
-
-## 🚀 Instalación y Configuración
-
-### Prerequisitos
-- Node.js >= 18.0.0
-- npm
-
-### Pasos de instalación
-```bash
-# Clonar el repositorio
-git clone https://github.com/danigarmor/Web-Interactiva-Tabla-Cronoestratigráfica-2023.git
-cd Web-Interactiva-Tabla-Cronoestratigráfica-2023
-
-# Instalar dependencias
-npm install
-
-# Crear archivo .env basado en .env.example
-cp .env.example .env
-# Editar .env con tus valores reales
-```
-
-### Configuración de Variables de Entorno
-
-1. **Para desarrollo local:**
-   ```
-   PORT=8000
-   ```
-
-2. **Para producción (necesario SMTP real):**
-   - Configura una App Password de Gmail o servidor SMTP
-   - Genera una clave de encriptación: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-   - Genera el hash de la contraseña admin: `npm run hash-password your-admin-password`
-
-### Seguridad
-
-⚠️ **Importante:** El archivo `.env` y `database.json` NO deben ser versionados. Ya están incluidos en `.gitignore`.
-
-- Las credenciales SMTP se encriptan automáticamente almacenándolas en variables de entorno
-- Las contraseñas se almacenan como hashes PBKDF2, nunca en texto plano
-- Las cookies de sesión son HTTPOnly, Secure (en producción) y SameSite=Lax
-
-### Ejecutar en Desarrollo
-```bash
-npm start
-# Visita http://localhost:8000
-```
-
----
 
 ## 📁 Estructura del Proyecto
 
@@ -129,17 +80,14 @@ PruebaAntigravity/
 
 ## 🎯 Uso
 
+**🌐 Web en producción:** https://cronoestrato-2023.fly.dev/
+
 **Como estudiante de geología:**
 1. Regístrate con tu correo
 2. Verifica tu cuenta (revisa spam si no llega)
 3. Explora la tabla cronoestratigráfica interactiva
 4. Juega a los desafíos para memorizar períodos y fósiles
 5. Gana medallas y sigue tu progreso
-
-**Como administrador:**
-1. Inicia sesión con credenciales de admin
-2. Accede a la pestaña "Ayudas de los usuarios"
-3. Revisa y gestiona sugerencias de la comunidad
 
 ---
 
