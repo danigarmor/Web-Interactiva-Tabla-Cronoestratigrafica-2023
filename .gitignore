@@ -1,0 +1,14 @@
+# Binarios ejecutables
+cloudflared
+
+# Dependencias
+node_modules/
+
+# Logs del servidor y túnel
+*.log
+server.log
+tunnel.log
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db

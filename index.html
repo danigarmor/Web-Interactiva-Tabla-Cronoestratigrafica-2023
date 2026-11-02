@@ -682,7 +682,7 @@
             <div id="auth-field-email" class="form-group" style="display:none;">
               <label for="auth-input-email">Correo Electrónico:</label>
               <input type="email" id="auth-input-email" placeholder="Correo electrónico" autocomplete="email">
-              <span style="font-size:0.75rem; color:var(--text-muted); margin-top:3px; display:block;">
+              <span style="font-size:0.85rem; color:var(--text-muted); margin-top:4px; display:block;">
                 Recibirás un enlace por correo para confirmar tu cuenta.
               </span>
             </div>
@@ -831,13 +831,123 @@
     <!-- Pie de página para ordenador / pantallas medianas y grandes -->
     <footer class="app-footer">
       <p>CronoEstrato 2023 · Tabla Cronoestratigráfica Internacional (ICS / IUGS)</p>
-      <p class="footer-credit">Desarrollado por el <b>Equipo CronoEstrato</b> con ayuda de la IA</p>
+      <p class="footer-credit">Desarrollado por <b>Daniel Garcia Morueco</b></p>
     </footer>
 
+  </div>
+
+  <!-- Banner de Cookies (GDPR) -->
+  <div id="cookie-banner" style="display: none;">
+    <div class="cookie-banner-text">
+      <b>Usamos cookies</b> para mantener tu sesión y preferencias. Al continuar, aceptas nuestro uso de cookies.
+    </div>
+    <div class="cookie-buttons">
+      <button id="btn-accept-cookies" class="btn-cookie-allow">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Modal de Preferencias de Cookies -->
+  <div id="cookie-preferences-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-sheet">
+      <div class="modal-drag-handle"></div>
+      <div class="modal-header">
+        <h2>Preferencias de Cookies</h2>
+        <button id="btn-close-cookie-modal" class="modal-close-btn">✕</button>
+      </div>
+      <div class="cookie-preferences-content">
+        <div class="cookie-option">
+          <div>
+            <strong> cookies esenciales</strong>
+            <div class="cookie-option-desc">Necesarias para el funcionamiento básico del sitio</div>
+          </div>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookie-essential" checked disabled>
+            <span class="cookie-slider"></span>
+          </label>
+        </div>
+        <div class="cookie-option">
+          <div>
+            <strong> cookies de preferencia</strong>
+            <div class="cookie-option-desc">Recordan tus preferencias de juego y tema</div>
+          </div>
+          <label class="cookie-switch">
+            <input type="checkbox" id="cookie-preferences" checked>
+            <span class="cookie-slider"></span>
+          </label>
+        </div>
+      </div>
+      <button id="btn-save-cookies" class="btn-primary" style="width: 100%;">Guardar Preferencias</button>
+    </div>
   </div>
 
   <!-- Scripts -->
   <script src="data.js"></script>
   <script src="app.js"></script>
+
+  <!-- Script de Cookies -->
+  <script>
+    (function() {
+      const COOKIE_NAME = 'crono_cookie_consent';
+      const COOKIE_EXPIRY_DAYS = 365;
+
+      function setCookie(name, value, days) {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/; SameSite=Lax';
+      }
+
+      function getCookie(name) {
+        return document.cookie.split('; ').reduce((r, v) => {
+          const parts = v.split('=');
+          return parts[0] === name ? decodeURIComponent(parts[1]) : r;
+        }, '');
+      }
+
+      function showCookieBanner() {
+        const banner = document.getElementById('cookie-banner');
+        if (banner && !getCookie(COOKIE_NAME)) {
+          banner.style.display = 'flex';
+        }
+      }
+
+      function acceptCookies() {
+        setCookie(COOKIE_NAME, 'accepted', COOKIE_EXPIRY_DAYS);
+        const banner = document.getElementById('cookie-banner');
+        if (banner) banner.style.display = 'none';
+      }
+
+      // Verificar si ya se aceptaron cookies
+      document.addEventListener('DOMContentLoaded', function() {
+        if (!getCookie(COOKIE_NAME)) {
+          showCookieBanner();
+        }
+      });
+
+      // Manejar clics
+      document.getElementById('btn-accept-cookies').addEventListener('click', acceptCookies);
+      document.getElementById('btn-cookie-preferences').addEventListener('click', function() {
+        document.getElementById('cookie-preferences-modal').style.display = 'flex';
+      });
+      document.getElementById('btn-close-cookie-modal').addEventListener('click', function() {
+        document.getElementById('cookie-preferences-modal').style.display = 'none';
+      });
+      document.getElementById('btn-save-cookies').addEventListener('click', function() {
+        const prefs = {
+          essential: true,
+          preferences: document.getElementById('cookie-preferences').checked
+        };
+        setCookie(COOKIE_NAME, JSON.stringify(prefs), COOKIE_EXPIRY_DAYS);
+        document.getElementById('cookie-preferences-modal').style.display = 'none';
+        const banner = document.getElementById('cookie-banner');
+        if (banner) banner.style.display = 'none';
+      });
+
+      // Cerrar modal al hacer click fuera
+      document.getElementById('cookie-preferences-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

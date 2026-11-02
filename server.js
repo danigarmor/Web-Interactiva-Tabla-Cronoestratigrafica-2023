@@ -4,9 +4,11 @@
  * - Base de datos persistente en disco (database.json)
  * - Autenticación con usuario/contraseña sin duplicados
  * - Verificación obligatoria de correo electrónico con enlace/botón
- * - Integración con Google Identity Services (GIS)
- * - Almacenamiento seguro del administrador danigarmo (admin2023)
+ * - Cifrado seguro con AES-256-GCM para credenciales sensibles
+ * - Cookies de sesión seguras
  */
+
+require('dotenv').config();
 
 const http = require('http');
 const fs = require('fs');
@@ -14,6 +16,17 @@ const path = require('path');
 const crypto = require('crypto');
 const url = require('url');
 const { execFile } = require('child_process');
+
+const {
+  encrypt,
+  decryptJSON,
+  hashPassword,
+  verifyPassword,
+  createSessionCookie,
+  parseSessionCookie,
+  createExpiredSessionCookie,
+  generateSecureToken
+} = require('./crypto-utils');
 
 let nodemailer = null;
 try {
@@ -26,7 +39,8 @@ const PORT = process.env.PORT || 8000;
 const DB_FILE = path.join(__dirname, 'database.json');
 
 // Remitente oficial configurado solicitado por Daniel: gardanie73@gmail.com
-const GMAIL_SENDER = 'Dani Garcia <gardanie73@gmail.com>';
+const GMAIL_SENDER = process.env.SMTP_USER || 'gardanie73@gmail.com';
+const ADMIN_USER = process.env.ADMIN_USERNAME || 'danigarmo';
 
 // Configuración SMTP opcional para envíos de correo
 const SMTP_CONFIG = {
@@ -159,14 +173,17 @@ const MIME_TYPES = {
 function getDB() {
   try {
     if (!fs.existsSync(DB_FILE)) {
+      // Hashear la contraseña del admin por defecto
+      const defaultPass = process.env.ADMIN_PASSWORD_HASH || hashPassword('admin2023');
+
       const initial = {
         users: [
           {
             id: 'usr-admin-1',
-            username: 'danigarmo',
+            username: ADMIN_USER,
             name: 'Equipo CronoEstrato',
-            email: 'danigarmo@admin.local',
-            password: 'admin2023',
+            email: 'admin@cronoestrato.com',
+            passwordHash: defaultPass,
             verified: true,
             verificationToken: null,
             isAdmin: true,
@@ -227,13 +244,19 @@ function parseBody(req) {
   });
 }
 
-function sendJSON(res, statusCode, data) {
-  res.writeHead(statusCode, {
+function sendJSON(res, statusCode, data, setCookie = null) {
+  const headers = {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-  });
+  };
+
+  if (setCookie) {
+    headers['Set-Cookie'] = setCookie;
+  }
+
+  res.writeHead(statusCode, headers);
   res.end(JSON.stringify(data));
 }
 
@@ -250,6 +273,16 @@ function getBaseUrl(req) {
   }
   // URL pública accesible desde iPhone y cualquier dispositivo al abrir el correo
   return 'https://jesus-cet-propecia-climb.trycloudflare.com';
+}
+
+/**
+ * Establece cookie de sesión en respuesta
+ * @param {object} res - Objeto respuesta HTTP
+ * @param {object} sessionData - Datos de sesión
+ */
+function setSessionCookie(res, sessionData) {
+  const cookie = createSessionCookie(sessionData);
+  res.setHeader('Set-Cookie', cookie);
 }
 
 // ==========================================================================
@@ -280,10 +313,9 @@ const server = http.createServer(async (req, res) => {
       const { username, email, password, name } = await parseBody(req);
       const cleanUser = (username || '').trim().toLowerCase();
       const cleanEmail = (email || '').trim().toLowerCase();
-      const cleanPass = (password || '').trim();
       const cleanName = (name || '').trim() || cleanUser;
 
-      if (!cleanUser || !cleanEmail || !cleanPass) {
+      if (!cleanUser || !cleanEmail || !password) {
         return sendJSON(res, 400, { success: false, message: 'Todos los campos son obligatorios.' });
       }
 
@@ -295,14 +327,14 @@ const server = http.createServer(async (req, res) => {
         return sendJSON(res, 400, { success: false, message: 'El correo electrónico no tiene un formato válido.' });
       }
 
-      if (cleanPass.length < 8) {
+      if (password.length < 8) {
         return sendJSON(res, 400, {
           success: false,
           message: 'La contraseña debe tener al menos 8 caracteres.'
         });
       }
 
-      if (!/[A-Z]/.test(cleanPass)) {
+      if (!/[A-Z]/.test(password)) {
         return sendJSON(res, 400, {
           success: false,
           message: 'La contraseña debe contener al menos una letra mayúscula (A-Z).'
@@ -329,19 +361,22 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Generar token único de verificación
-      const token = crypto.randomBytes(32).toString('hex');
+      const token = generateSecureToken(32);
       const baseUrl = getBaseUrl(req);
       const verificationUrl = `${baseUrl}/verify.html?token=${token}`;
+
+      // Hashear contraseña antes de guardar
+      const passwordHash = hashPassword(password);
 
       const newUser = {
         id: 'usr-' + Date.now(),
         username: cleanUser,
         name: cleanName,
         email: cleanEmail,
-        password: cleanPass,
+        passwordHash: passwordHash,
         verified: false, // NO PUEDE INICIAR SESIÓN HASTA VERIFICAR
         verificationToken: token,
-        isAdmin: cleanUser === 'danigarmo',
+        isAdmin: cleanUser === ADMIN_USER,
         provider: 'local',
         avatar: '🎓',
         score: 0,
@@ -443,7 +478,7 @@ const server = http.createServer(async (req, res) => {
         u.email.toLowerCase() === query
       );
 
-      if (!user || user.password !== pass) {
+      if (!user || !verifyPassword(pass, user.passwordHash)) {
         return sendJSON(res, 401, {
           success: false,
           message: 'Usuario o contraseña incorrectos.'
@@ -460,6 +495,19 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+      // Crear cookie de sesión segura
+      const sessionData = {
+        userId: user.id,
+        username: user.username,
+        email: user.email,
+        isAdmin: !!user.isAdmin,
+        provider: user.provider || 'local',
+        avatar: user.avatar || (user.isAdmin ? '👨‍💻' : '🎓'),
+        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 días
+      };
+
+      const cookie = createSessionCookie(sessionData);
+
       return sendJSON(res, 200, {
         success: true,
         message: 'Sesión iniciada con éxito.',
@@ -475,14 +523,14 @@ const server = http.createServer(async (req, res) => {
           streak: user.streak || 0,
           achievements: user.achievements || {}
         }
-      });
+      }, cookie);
     } catch (err) {
       console.error('Error en /api/auth/login:', err);
       return sendJSON(res, 500, { success: false, message: 'Error interno en login.' });
     }
   }
 
-  // 4. REGISTRO/LOGIN CON GOOGLE DESHABILITADO (La autenticación es 100% manual)
+  // 4. REGISTRO/LOGIN CON GOOGLE DESHABILITADO
   if (req.method === 'POST' && pathname === '/api/auth/google-verify') {
     return sendJSON(res, 400, {
       success: false,
@@ -586,13 +634,53 @@ const server = http.createServer(async (req, res) => {
     return sendJSON(res, 200, { success: true, message: 'Feedback eliminado.' });
   }
 
-  // 10. CONSULTAR ÚLTIMO CORREO ENVIADO (para previsualizar botón de verificación)
+  // 10. CONSULTAR ÚLTIMO CORREO ENVIADO
   if (req.method === 'GET' && pathname === '/api/auth/latest-email') {
     const to = (parsedUrl.query.to || '').toLowerCase();
     const db = getDB();
     const list = db.emails || [];
     const mail = to ? list.filter(e => e.to.toLowerCase() === to).pop() : list[list.length - 1];
     return sendJSON(res, 200, { success: true, email: mail || null });
+  }
+
+  // 11. VERIFICAR SESIÓN DESDE COOKIE
+  if (req.method === 'GET' && pathname === '/api/auth/check-session') {
+    const sessionData = parseSessionCookie(req.headers.cookie);
+
+    if (sessionData) {
+      const db = getDB();
+      const user = db.users.find(u => u.id === sessionData.userId);
+
+      if (user && user.verified) {
+        return sendJSON(res, 200, {
+          success: true,
+          authenticated: true,
+          user: {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            isAdmin: !!user.isAdmin,
+            provider: user.provider || 'local',
+            avatar: user.avatar || (user.isAdmin ? '👨‍💻' : '🎓'),
+            score: user.score || 0,
+            streak: user.streak || 0,
+            achievements: user.achievements || {}
+          }
+        });
+      }
+    }
+
+    return sendJSON(res, 200, { success: true, authenticated: false });
+  }
+
+  // 12. CIERRE DE SESIÓN
+  if (req.method === 'POST' && pathname === '/api/auth/logout') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': createExpiredSessionCookie()
+    });
+    return res.end(JSON.stringify({ success: true, message: 'Sesión cerrada.' }));
   }
 
   // ==========================================================================
@@ -629,6 +717,6 @@ server.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(`🚀 Servidor CronoEstrato 2023 activo en http://localhost:${PORT}`);
   console.log(`📁 Base de datos activa en: ${DB_FILE}`);
-  console.log(`👑 Administrador configurado: danigarmo (admin2023)`);
+  console.log(`👑 Administrador configurado: ${ADMIN_USER}`);
   console.log(`=======================================================`);
 });

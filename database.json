@@ -1,0 +1,33 @@
+{
+  "users": [
+    {
+      "id": "usr-admin-1",
+      "username": "danigarmor",
+      "name": "Equipo CronoEstrato",
+      "email": "danigarmo@admin.local",
+      "password": "admin2023",
+      "verified": true,
+      "verificationToken": null,
+      "isAdmin": true,
+      "provider": "local",
+      "avatar": "👨‍💻",
+      "score": 300,
+      "streak": 0,
+      "achievements": {
+        "first_look": true,
+        "order_master": false,
+        "trivia_streak": false,
+        "guesser_bullseye": false,
+        "memory_won": false,
+        "precambric_scholar": true,
+        "intruder_detective": true,
+        "steno_builder": false,
+        "flashcard_scholar": false
+      },
+      "createdAt": "2026-10-11T18:00:00.000Z",
+      "lastActive": "2026-10-11T19:46:24.517Z"
+    }
+  ],
+  "feedbacks": [],
+  "emails": []
+}
