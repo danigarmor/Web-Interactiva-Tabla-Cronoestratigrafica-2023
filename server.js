@@ -35,8 +35,9 @@ try {
   nodemailer = null;
 }
 
-const PORT = process.env.PORT || 8000;
-const DB_FILE = path.join(__dirname, 'database.json');
+const PORT = process.env.PORT || 8080;
+// Usar variable de entorno para base de datos (en Fly.io /data/database.json)
+const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'database.json');
 
 // Remitente oficial configurado solicitado por Daniel: gardanie73@gmail.com
 const GMAIL_SENDER = process.env.SMTP_USER || 'gardanie73@gmail.com';

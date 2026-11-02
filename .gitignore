@@ -12,3 +12,17 @@ tunnel.log
 # Archivos de sistema operativo
 .DS_Store
 Thumbs.db
+
+# Variables de entorno - NO COMMIT
+.env
+.env.local
+.env.production
+
+# Base de datos - NO COMMIT (se usa volumen persistente en Fly.io)
+database.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
