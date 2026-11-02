@@ -127,14 +127,17 @@ async function dispatchEmail(to, name, subject, verificationUrl) {
 
   const textContent = `¡Hola ${name || 'Geólogo'}!\n\nGracias por registrarte en CronoEstrato 2023.\n\nPara verificar tu correo y activar de forma permanente tu cuenta, pulsa en el siguiente enlace:\n\n${verificationUrl}\n\n¡Un saludo!\nEquipo CronoEstrato 2023 · Tabla Cronoestratigráfica\n(Enviado desde gardanie73@gmail.com)`;
 
-  // 1. Enviar desde la cuenta gardanie73@gmail.com configurada en macOS
-  try {
-    const mailResult = await sendViaAppleMail(to, subject, textContent);
-    if (mailResult.sent) {
-      return mailResult;
+  // Apple Mail solo existe en el equipo de desarrollo macOS. En Fly (Linux)
+  // se omite para usar SMTP directamente, sin producir un fallo intermedio.
+  if (process.platform === 'darwin') {
+    try {
+      const mailResult = await sendViaAppleMail(to, subject, textContent);
+      if (mailResult.sent) {
+        return mailResult;
+      }
+    } catch (err) {
+      console.warn('Error intentando envío via Apple Mail:', err);
     }
-  } catch (err) {
-    console.warn('Error intentando envío via Apple Mail:', err);
   }
 
   // 2. Si hay transporter SMTP configurado (nodemailer)
@@ -439,9 +442,13 @@ const server = http.createServer(async (req, res) => {
 
       saveDB(db);
 
+      const emailMessage = emailStatus.sent
+        ? `Te hemos enviado un correo de confirmación a ${cleanEmail}. Por favor, abre tu bandeja de entrada y pulsa en el enlace para verificar tu cuenta y poder iniciar sesión.`
+        : `No se ha podido enviar el correo de confirmación a ${cleanEmail}. Revisa la configuración SMTP e inténtalo de nuevo.`;
+
       return sendJSON(res, 201, {
         success: true,
-        message: `Te hemos enviado un correo de confirmación a ${cleanEmail} desde gardanie73@gmail.com. Por favor, abre tu bandeja de entrada y pulsa en el enlace para verificar tu cuenta y poder iniciar sesión.`,
+        message: emailMessage,
         email: cleanEmail,
         emailDelivered: emailStatus.sent
       });

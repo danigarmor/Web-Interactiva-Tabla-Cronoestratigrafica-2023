@@ -22,7 +22,9 @@ primary_region = 'cdg'
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  # Mantiene una instancia preparada para evitar el retardo de arranque en la
+  # primera visita. Requiere una cuenta de Fly con facturación habilitada.
+  min_machines_running = 1
 
 [[vm]]
   size = 'shared-cpu-1x'
