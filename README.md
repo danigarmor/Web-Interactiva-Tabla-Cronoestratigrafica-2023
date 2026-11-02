@@ -17,21 +17,13 @@
    - **Modo Invitado (Aviso)**: Si no se inicia sesión, el progreso (puntos, rachas, medallas) **no se guarda**; únicamente se persiste en la cuenta creada.
    - **Sesión persistente**: Cada usuario conserva su propio récord y rango geológico en su perfil.
 
-3. **👑 Panel Privado de Administrador ("Ayudas de los usuarios")**:
-   - **Credenciales oficiales de Daniel**:
-     - **Usuario**: `danigarmo`
-     - **Contraseña**: `admin2023`
-   - Al iniciar sesión con estas credenciales, se desbloquea en la barra superior y móvil la pestaña exclusiva **📬 Ayudas de los usuarios**.
-   - Muestra cada mensaje recibido con el remitente (usuario registrado, cuenta Google o invitado), fecha y hora exacta, categoría y estado.
-   - Opciones para marcar como revisado o eliminar.
-
-4. **🛡️ Filtro Inteligente de IA para Feedback**:
+3. **🛡️ Filtro Inteligente de IA para Feedback**:
    - Botón **💡 Ayudar** en la cabecera para que cualquier usuario envíe sugerencias.
    - **Detección anti-ofensiva**: Bloquea de inmediato insultos, faltas de respeto o lenguaje inapropiado.
    - **Evaluador de aportaciones constructivas**: Analiza si el mensaje aporta mejoras reales (menciones a estratos, pisos geológicos, fósiles, diseño, mecánicas de juego o bugs).
    - Clasifica la relevancia con puntuación y etiquetas automáticas antes de remitirlo al buzón privado de Daniel.
 
-3. **🎮 7 Modos de Juego Interactivos para Estudio y Memorización**:
+4. **🎮 7 Modos de Juego Interactivos para Estudio y Memorización**:
    - **🧩 1. Orden Cronológico**: Ordena los estratos temporales mediante controles táctiles. Incluye 5 niveles de dificultad:
      - Eras del Fanerozoico.
      - Períodos del Paleozoico.
@@ -45,14 +37,14 @@
    - **🧱 6. Columna Estratigráfica (Principio de Steno)**: Constructor visual interactivo para apilar los estratos geológicos respetando la Ley de Superposición de Estratos de Nicolás Steno (1669): lo más antiguo abajo (base) y lo más moderno arriba (cima).
    - **🎴 7. Flashcards Geológicas 3D**: Tarjetas interactivas con giro 3D que integran los 12 períodos del Fanerozoico con colores oficiales ICS, duraciones y rangos Ma, fósiles guía, hitos evolutivos y trucos mnemotécnicos. Sistema de seguimiento ("Repasar después" o "¡Dominada!").
 
-4. **💡 Mnemotécnicas Geológicas en Español**:
+5. **💡 Mnemotécnicas Geológicas en Español**:
    - Reglas célebres para memorizar períodos (como *«Celia Ordena Su Dormitorio Con Pasión»* para el Paleozoico).
 
-5. **🏆 Sistema de Progresión y Logros**:
+6. **🏆 Sistema de Progresión y Logros**:
    - Rango dinámico (desde *Geólogo Aprendiz* hasta *Catedrático Estratígrafo*).
    - Puntuación, rachas de aciertos y medallas coleccionables guardadas automáticamente en el dispositivo.
 
-6. **🔊 Efectos Sonoros Sintetizados**:
+7. **🔊 Efectos Sonoros Sintetizados**:
    - Generados en tiempo real mediante **Web Audio API** (sin descargas ni dependencias pesadas, funciona 100% offline).
 
 ---
