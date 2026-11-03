@@ -3,6 +3,7 @@ cloudflared
 
 # Dependencias
 node_modules/
+.worktrees/
 
 # Logs del servidor y túnel
 *.log
