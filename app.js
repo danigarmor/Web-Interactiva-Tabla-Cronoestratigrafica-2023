@@ -2652,3 +2652,55 @@ document.addEventListener('DOMContentLoaded', function() {
   initAdMob();
 });
 
+// ==========================================================================
+// 13. GOOGLE ANALYTICS 4 TRACKING (User Behavior Analytics)
+// ==========================================================================
+function gtagTracking(eventName, params = {}) {
+  if (typeof gtag !== 'undefined') {
+    gtag('event', eventName, params);
+  }
+}
+
+// Track tab changes
+document.querySelectorAll('.tabbar-item, .desktop-nav-item').forEach(tab => {
+  tab.addEventListener('click', function() {
+    const tabName = this.getAttribute('data-tab') || 'unknown';
+    gtagTracking('tab_click', {
+      event_category: 'Navigation',
+      event_label: tabName
+    });
+  });
+});
+
+// Track game starts
+document.querySelectorAll('.game-card').forEach(card => {
+  card.addEventListener('click', function() {
+    const gameName = this.getAttribute('data-game') || 'unknown';
+    gtagTracking('game_start', {
+      event_category: 'Game',
+      event_label: gameName
+    });
+  });
+});
+
+// Track button interactions
+document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const action = this.id || this.className || 'button_click';
+    gtagTracking('button_click', {
+      event_category: 'Interaction',
+      event_label: action
+    });
+  });
+});
+
+// Track achievement unlocks
+const originalUnlockAchievement = window.unlockAchievement || function(){};
+window.unlockAchievement = function(achievementId) {
+  gtagTracking('achievement_unlock', {
+    event_category: 'Progress',
+    event_label: achievementId
+  });
+  return originalUnlockAchievement(achievementId);
+};
+
