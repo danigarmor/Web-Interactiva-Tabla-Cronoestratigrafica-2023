@@ -203,7 +203,11 @@ body {
   justify-content: center;
   font-size: 1.15rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-standard) var(--ease-out),
+               border-color var(--duration-standard) var(--ease-out),
+               background-color var(--duration-standard) var(--ease-out),
+               color var(--duration-standard) var(--ease-out);
   color: var(--text-primary);
   touch-action: manipulation;
   flex-shrink: 0;
@@ -329,7 +333,12 @@ body {
   color: var(--text-primary);
   font-size: 0.88rem;
   outline: none;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .search-box input:focus {
@@ -370,7 +379,23 @@ body {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
+  /* Specify exact properties - avoid 'all' for performance */
+  transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out);
+}
+
+/* Hover only on true hover devices - protect touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-1px);
+  }
+}
+
+.chip:active {
+  transform: scale(0.97);
 }
 
 .chip.active {
@@ -392,8 +417,20 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
   overflow: hidden;
-  transition: all 0.2s ease;
+  /* Specify exact properties - avoid 'all' for performance */
+  transition: transform var(--duration-standard) var(--ease-out),
+               box-shadow var(--duration-standard) var(--ease-out),
+               border-color var(--duration-standard) var(--ease-out);
   backdrop-filter: blur(10px);
+}
+
+/* Hover only on true hover devices */
+@media (hover: hover) and (pointer: fine) {
+  .eon-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    border-color: var(--border-active);
+  }
 }
 
 .eon-card-header {
@@ -530,7 +567,11 @@ body {
   border-radius: 18px;
   padding: 16px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-standard) var(--ease-out),
+               border-color var(--duration-standard) var(--ease-out),
+               background-color var(--duration-standard) var(--ease-out),
+               color var(--duration-standard) var(--ease-out);
   backdrop-filter: blur(10px);
 }
 
@@ -741,7 +782,12 @@ body {
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .btn-primary:active {
@@ -758,7 +804,12 @@ body {
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .btn-secondary:active {
@@ -852,7 +903,11 @@ body {
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-standard) var(--ease-out),
+               border-color var(--duration-standard) var(--ease-out),
+               background-color var(--duration-standard) var(--ease-out),
+               color var(--duration-standard) var(--ease-out);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1142,7 +1197,11 @@ body {
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-standard) var(--ease-out),
+               border-color var(--duration-standard) var(--ease-out),
+               background-color var(--duration-standard) var(--ease-out),
+               color var(--duration-standard) var(--ease-out);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1261,7 +1320,12 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
   cursor: pointer;
   background: rgba(0, 0, 0, 0.15);
 }
@@ -1581,7 +1645,12 @@ body {
   padding: 10px;
   cursor: pointer;
   touch-action: manipulation;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .btn-review:active {
@@ -1599,7 +1668,12 @@ body {
   padding: 10px;
   cursor: pointer;
   touch-action: manipulation;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .btn-master:active {
@@ -1707,7 +1781,12 @@ body {
   border-radius: 16px;
   padding: 14px;
   opacity: 0.55;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .achievement-card.unlocked {
@@ -1790,7 +1869,11 @@ body {
   gap: 3px;
   cursor: pointer;
   color: var(--text-muted);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-standard) var(--ease-out),
+               border-color var(--duration-standard) var(--ease-out),
+               background-color var(--duration-standard) var(--ease-out),
+               color var(--duration-standard) var(--ease-out);
   padding: 5px 8px;
   min-width: 58px;
   min-height: 48px;
@@ -2046,7 +2129,12 @@ body {
   border: 1px solid rgba(6, 182, 212, 0.2);
   border-radius: 12px;
   padding: 10px 12px;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .epoch-header-row {
@@ -2259,7 +2347,12 @@ body {
     padding: 8px 16px;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+        /* Specify exact properties - avoid 'all' for performance */
+        transition: transform var(--duration-fast) var(--ease-out),
+                   background-color var(--duration-fast) var(--ease-out),
+                   border-color var(--duration-fast) var(--ease-out),
+                   color var(--duration-fast) var(--ease-out),
+                   opacity var(--duration-fast) var(--ease-out);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -2475,7 +2568,12 @@ body {
   padding: 8px 12px;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
   flex: 1;
   min-height: 40px;
   touch-action: manipulation;
@@ -2499,7 +2597,12 @@ body {
   padding: 8px 12px;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
   flex: 1;
   min-height: 40px;
   min-width: 0;
@@ -2665,7 +2768,12 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 16px;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
   backdrop-filter: blur(10px);
 }
 
@@ -2780,7 +2888,10 @@ body {
   font-weight: 700;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out),
+               box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .btn-admin-action:hover {
@@ -2821,7 +2932,12 @@ body {
   padding: 10px 6px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
 }
 
@@ -3004,7 +3120,12 @@ body {
   gap: 7px;
   font-size: 0.85rem; /* WCAG compliant */
   font-weight: 600;
-  transition: all 0.2s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               background-color var(--duration-fast) var(--ease-out),
+               border-color var(--duration-fast) var(--ease-out),
+               color var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out);
 }
 
 .req-item.invalid {
@@ -3211,7 +3332,10 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   color: #202124;
-  transition: all 0.15s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out),
+               box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .btn-google:hover {
@@ -3301,7 +3425,10 @@ body {
   padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s ease;
+    /* Specify exact properties - avoid 'all' for performance */
+    transition: transform var(--duration-fast) var(--ease-out),
+               opacity var(--duration-fast) var(--ease-out),
+               box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .btn-cookie-preferences:hover {
@@ -3395,4 +3522,35 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+
+/* ==========================================================================
+   ACCESIBILIDAD Y REDUCCIÓN DE MOVIMIENTO
+   ========================================================================== */
+
+/* Soporte para prefers-reduced-motion - usuarios con problemas de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   TRANSFORM-ORIGIN PARA ELEMENTOS DE DESPEGAR/MOSTRAR
+   ========================================================================== */
+
+/* Modales y popover deben escalar desde el centro (no están anclados) */
+.modal-backdrop,
+.modal-sheet {
+  transform-origin: center;
+}
+
+/* Botones y triggers pueden tener transform-origin personalizado vía variable */
+.transform-origin-center {
+  --transform-origin: center;
+}
 
