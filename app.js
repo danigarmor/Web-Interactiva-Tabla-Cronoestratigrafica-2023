@@ -2190,21 +2190,6 @@ function openProfileModal() {
 // ==========================================================================
 // 9. CONTROLADORES DE AUTENTICACIÓN MANUAL (CONECTADO AL BACKEND Y BD)
 // ==========================================================================
-function initAuthUI() {
-  const btnAuthTrigger = document.getElementById('btn-auth-trigger');
-  const btnGuestLogin = document.getElementById('btn-guest-login');
-  const authModal = document.getElementById('auth-modal');
-  const authTabs = document.querySelectorAll('.auth-tab');
-  const authForm = document.getElementById('auth-form');
-  const btnLogout = document.getElementById('btn-logout-action');
-  const btnGotoAdmin = document.getElementById('btn-goto-admin-panel');
-
-  let activeMode = 'login';
-
-  // Inicializar Google Sign-In
-  initGoogleSignIn();
-}
-
 function initGoogleSignIn() {
   // Esperar a que cargue la librería de Google Identity Services
   const tryInitGoogle = () => {
@@ -2288,6 +2273,20 @@ async function handleGoogleCredentialResponse(response) {
     }
   }
 }
+
+function initAuthUI() {
+  const btnAuthTrigger = document.getElementById('btn-auth-trigger');
+  const btnGuestLogin = document.getElementById('btn-guest-login');
+  const authModal = document.getElementById('auth-modal');
+  const authTabs = document.querySelectorAll('.auth-tab');
+  const authForm = document.getElementById('auth-form');
+  const btnLogout = document.getElementById('btn-logout-action');
+  const btnGotoAdmin = document.getElementById('btn-goto-admin-panel');
+
+  let activeMode = 'login';
+
+  // Inicializar Google Sign-In
+  initGoogleSignIn();
 
   // Si la URL viene tras verificar correo (?login=true&user=...)
   const urlParams = new URLSearchParams(window.location.search);
@@ -2448,7 +2447,6 @@ async function handleGoogleCredentialResponse(response) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Crear Cuenta y Recibir Correo';
       }
-
     } else {
       // 2. MODO INICIO DE SESIÓN MANUAL ESTÁNDAR
       // (Funciona exactamente igual para todos; Daniel con danigarmo / admin2023 activa panel admin)
