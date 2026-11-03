@@ -2624,3 +2624,31 @@ function initAdminFilters() {
   });
 }
 
+// ==========================================================================
+// 12. GOOGLE ADMOB INTEGRATION (Monetización)
+// ==========================================================================
+function initAdMob() {
+  const adBannerContainer = document.getElementById('ad-banner-container');
+  if (!adBannerContainer) return;
+
+  // Configuración de AdMob (REEMPLAZAR con ID reales de AdMob)
+  const adConfig = {
+    dataAdClient: 'ca-pub-XXXXXXXXXX', // Reemplazar con ID de cliente
+    dataAdSlot: 'XXXXXXXXXX',         // Reemplazar con ID de slot
+  };
+
+  try {
+    if (typeof adsbygoogle !== 'undefined' && adsbygoogle.push) {
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    }
+  } catch (e) {
+    // Silently fail in development
+    console.log('AdMob not configured - replace XXXXXXXX with real IDs');
+  }
+}
+
+// Inicializar AdMob cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+  initAdMob();
+});
+
